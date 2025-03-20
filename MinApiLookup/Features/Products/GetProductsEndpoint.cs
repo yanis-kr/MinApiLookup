@@ -1,15 +1,16 @@
 ﻿namespace MinApiLookup.Features.Products;
 
 using FastEndpoints;
-using MinApiLookup.Common;
+using Microsoft.Extensions.Caching.Memory;
+using MinApiLookup.Features.Products.Models;
 
 public class GetProductsEndpoint : Endpoint<Product, IEnumerable<Product>>
 {
-    private readonly IRepository<Product> _repository;
+    private readonly IMemoryCache _cache;
 
-    public GetProductsEndpoint(IRepository<Product> repository)
+    public GetProductsEndpoint(IMemoryCache cache)
     {
-        _repository = repository;
+        _cache = cache;
     }
 
     public override void Configure()
@@ -18,9 +19,27 @@ public class GetProductsEndpoint : Endpoint<Product, IEnumerable<Product>>
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Product req, CancellationToken ct)
+    public override Task HandleAsync(Product req, CancellationToken ct)
     {
-        var results = await _repository.GetFilteredAsync(req);
-        await SendAsync(results, cancellation: ct);
+        var products = _cache.Get<List<Product>>("Products");
+
+        var filtered = products.AsQueryable();
+
+        if (!string.IsNullOrEmpty(req.Code1))
+            filtered = filtered.Where(p => p.Code1 == req.Code1);
+
+        if (!string.IsNullOrEmpty(req.Code2))
+            filtered = filtered.Where(p => p.Code2 == req.Code2);
+
+        if (!string.IsNullOrEmpty(req.Category))
+            filtered = filtered.Where(p => p.Category == req.Category);
+
+        if (!string.IsNullOrEmpty(req.Type))
+            filtered = filtered.Where(p => p.Type == req.Type);
+
+        return SendAsync(filtered, cancellation: ct);
     }
+
+    private readonly IMemoryCache _cache;
+    public GetProductsEndpoint(IMemoryCache cache) => _cache = cache;
 }
