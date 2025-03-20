@@ -3,7 +3,6 @@
 using FastEndpoints;
 using MinApiLookup.Common;
 
-
 public class GetProductsEndpoint : Endpoint<Product, IEnumerable<Product>>
 {
     private readonly IRepository<Product> _repository;

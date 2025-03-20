@@ -4,14 +4,15 @@ namespace MinApiLookup.Features.Products;
 
 public class Product
 {
-    [DbColumn("code_1"), QueryParam("code1")]
+    [DbColumn("Code_L"), QueryParam("codeL")]
     public string? Code1 { get; set; }
 
-    [DbColumn("code_2")]
-    [QueryParam("code2")]
+    [DbColumn("Code_T"), QueryParam("codeT")]
     public string? Code2 { get; set; }
 
-    [DbColumn("category")]
-    [QueryParam("category")]
+    [DbColumn("category"), QueryParam("category")]
     public string? Category { get; set; }
+
+    [DbColumn("AccountType"),QueryParam("accountType")]
+    public string? AccountType { get; set; }
 }
