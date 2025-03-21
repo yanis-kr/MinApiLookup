@@ -1,15 +1,17 @@
-﻿namespace MinApiLookup.Features.Countries;
+﻿using FastEndpoints;
+using Microsoft.Extensions.Caching.Memory;
+using MinApiLookup.Extensions;
+using MinApiLookup.Features.Countries.Models;
 
-using FastEndpoints;
-using MinApiLookup.Common;
+namespace MinApiLookup.Features.Countries;
 
 public class GetCountriesEndpoint : Endpoint<Country, IEnumerable<Country>>
 {
-    private readonly IRepository<Country> _repository;
+    private readonly IMemoryCache _cache;
 
-    public GetCountriesEndpoint(IRepository<Country> repository)
+    public GetCountriesEndpoint(IMemoryCache cache)
     {
-        _repository = repository;
+        _cache = cache;
     }
 
     public override void Configure()
@@ -18,10 +20,15 @@ public class GetCountriesEndpoint : Endpoint<Country, IEnumerable<Country>>
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Country req, CancellationToken ct)
+    public override Task HandleAsync(Country req, CancellationToken ct)
     {
-        var results = await _repository.GetFilteredAsync(req);
-        await SendAsync(results, cancellation: ct);
+        var countries = _cache.Get<List<Country>>("Countries");
+        if (countries == null)
+            throw new Exception("Countries cache is empty");
+
+        var filtered = QueryFilterBuilder<Country>.ApplyFilters(countries.AsQueryable(), req);
+
+        return SendAsync(filtered, cancellation: ct);
     }
 }
 

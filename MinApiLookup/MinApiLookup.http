@@ -1,6 +1,8 @@
-@MinApiLookup_HostAddress = http://localhost:5149
+@host = https://localhost:7000
 
-GET {{MinApiLookup_HostAddress}}/weatherforecast/
+GET {{host}}/products/
 Accept: application/json
 
 ###
+GET {{host}}/countries/
+Accept: application/json
