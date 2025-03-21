@@ -2,6 +2,7 @@
 using FastEndpoints.Swagger;
 using Microsoft.Extensions.Caching.Memory;
 using MinApiLookup.Data;
+using MinApiLookup.Features.ProductAccounts;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -14,7 +15,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     .Replace("%CONTENTROOTPATH%", builder.Environment.ContentRootPath);
 
 builder.Services
-    .AddMemoryCache()
+    .AddMemoryCache(options =>
+    {
+        options.SizeLimit = builder.Configuration.GetValue<long>("CacheSettings:CacheSizeLimit");
+    })
+    .AddSingleton<IProductAccountRepository>(_ => new ProductAccountRepository(connectionString))
+    .AddSingleton<ProductAccountCacheService>()
     .AddFastEndpoints()
     .SwaggerDocument();
 

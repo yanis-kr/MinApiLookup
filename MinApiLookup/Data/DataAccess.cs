@@ -32,7 +32,11 @@ public static class DataAccess
         var countries = await conn.QueryAsync<Country>(
             "SELECT code, name FROM Countries");
 
-        cache.Set("Products", products.ToList());
-        cache.Set("Countries", countries.ToList());
+        var cacheEntryOptions = new MemoryCacheEntryOptions
+        {
+            Size = 1  // size for each entry because SizeLimit is configured
+        };
+        cache.Set("Products", products.ToList(), cacheEntryOptions);
+        cache.Set("Countries", countries.ToList(), cacheEntryOptions);
     }
 }
